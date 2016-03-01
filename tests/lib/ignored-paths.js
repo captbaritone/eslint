@@ -59,7 +59,7 @@ function getIgnoreFiles(ignoredPaths) {
 function countDefaultPatterns(ignoredPaths) {
     var count = ignoredPaths.defaultPatterns.length;
     if (!ignoredPaths.options || (ignoredPaths.options.dotfiles !== true)) {
-        count++;
+        count = count + 2;  // Two patterns for ignoring dotfiles
     }
     return count;
 }
@@ -108,21 +108,9 @@ describe("IgnoredPaths", function() {
         });
 
         it("should not travel to parent directories to find .eslintignore when it's missing and cwd is provided", function() {
-            var cwd, ignoredPaths;
-
-            cwd = path.resolve(__dirname, "..", "fixtures", "configurations");
-
-            ignoredPaths = new IgnoredPaths({ ignore: true, cwd: cwd });
-            assert.ok(getIgnoreRules(ignoredPaths).length === 3);
-
-            assert.equal(getIgnoreRules(ignoredPaths).filter(function(rule) {
-                return rule.pattern === "/node_modules/";
-            }).length, 1);
-
-            assert.equal(getIgnoreRules(ignoredPaths).filter(function(rule) {
-                return rule.pattern === "/bower_components/";
-            }).length, 1);
-
+            var ignoredPaths = new IgnoredPaths({ ignore: true, cwd: getFixturePath("configurations") });
+            assert.lengthOf(getIgnoreRules(ignoredPaths), 4);
+            assert.lengthOf(getIgnoreFiles(ignoredPaths), 0);
         });
 
         it("should load empty array with ignorePath set to false", function() {
@@ -241,14 +229,14 @@ describe("IgnoredPaths", function() {
             assert.isTrue(ignoredPaths.contains(getFixturePath("not-a-file")));
         });
 
-        it("should return true for files outside of the cwd (with no ignore file provided)", function() {
+        it("should return false for files outside of the cwd (with no ignore file provided)", function() {
             var ignoredPaths = new IgnoredPaths({ ignore: true, cwd: getFixturePath("no-ignore-file") });
-            assert.isTrue(ignoredPaths.contains(getFixturePath("undef.js")));
+            assert.isFalse(ignoredPaths.contains(getFixturePath("undef.js")));
         });
 
-        it("should return true for files outside of ignorePath's directory", function() {
+        it("should return false for files outside of ignorePath's directory", function() {
             var ignoredPaths = new IgnoredPaths({ ignore: true, ignorePath: getFixturePath("custom-name", "ignore-file"), cwd: getFixturePath() });
-            assert.isTrue(ignoredPaths.contains(getFixturePath("undef.js")));
+            assert.isFalse(ignoredPaths.contains(getFixturePath("undef.js")));
         });
 
         it("should return true for file matching an ignore pattern exactly", function() {
