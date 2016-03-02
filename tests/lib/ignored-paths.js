@@ -217,9 +217,9 @@ describe("IgnoredPaths", function() {
             assert.throw(ignoredPaths.contains, Error);
         });
 
-        it("should throw if given a relative filename", function() {
+        it("should not throw if given a relative filename", function() {
             var ignoredPaths = new IgnoredPaths({ ignore: true, ignorePattern: "undef.js", cwd: getFixturePath() });
-            assert.throws(function() {
+            assert.doesNotThrow(function() {
                 ignoredPaths.contains("undef.js");
             });
         });
